@@ -1,0 +1,7 @@
+openai>=1.40
+python-dotenv>=1.0
+langgraph>=0.2
+tavily-python>=0.5
+python-telegram-bot>=21.0
+tldextract>=5.1
+requests>=2.31
