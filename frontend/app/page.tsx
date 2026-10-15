@@ -39,15 +39,17 @@ const LOOK = {
   },
 };
 
-// TEMPORARY: a fake checker so the page works before the backend is connected.
-// In Phase 2 this gets replaced with a real call to the FastAPI server.
-async function fakeCheck(message: string): Promise<Verdict> {
-  await new Promise((resolve) => setTimeout(resolve, 1200));
-  const note = "This is a sample result. The real investigation connects in Phase 2.";
-  const risky = /https?:\/\/|\$|urgent|new number|lost my phone|verify|password|code/i.test(message);
-  return risky
-    ? { verdict: "SCAM", risk: 90, scam_type: "sample result", reasons: [note], sources: [] }
-    : { verdict: "SAFE", risk: 5, scam_type: null, reasons: [note], sources: [] };
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// Sends the message to the FastAPI server, which runs the real investigation.
+async function checkMessage(message: string): Promise<Verdict> {
+  const res = await fetch(`${API_URL}/check`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  });
+  if (!res.ok) throw new Error(`Server returned ${res.status}`);
+  return res.json();
 }
 
 export default function Home() {
@@ -65,7 +67,7 @@ export default function Home() {
     setResult(null);
     setChecking(true);
     try {
-      setResult(await fakeCheck(message));
+      setResult(await checkMessage(message));
     } catch {
       setError("The check didn't finish. Try again in a moment.");
     } finally {

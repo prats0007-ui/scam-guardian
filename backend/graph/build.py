@@ -28,6 +28,11 @@ def build_graph():
 graph = build_graph()
 
 
+def investigate(message: str) -> dict:
+    """Runs the full graph and returns the whole state, including the verdict."""
+    return graph.invoke({"message": message})
+
+
 def check_message(message: str) -> str:
-    result = graph.invoke({"message": message})
-    return result["reply"]
+    """Used by the Telegram bot: returns just the reply text."""
+    return investigate(message)["reply"]
