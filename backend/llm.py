@@ -1,4 +1,5 @@
 """Thin wrapper around the OpenAI-compatible API (Token Factory or NVIDIA)."""
+import base64
 import json
 import re
 
@@ -45,3 +46,13 @@ def chat_json(model: str, system: str, user: str, max_tokens: int = 600,
     except json.JSONDecodeError:
         print("⚠️ Invalid JSON from model:", repr(text)[:300])
         return {}
+
+def read_image(image_bytes: bytes, mime: str = "image/jpeg") -> str:
+        """Uses the vision model to copy out all the text in a screenshot."""
+        b64 = base64.b64encode(image_bytes).decode()
+        resp = client.chat.completions.create(
+            model=config.MODEL_VISION,
+            messages=[{"role": "user", "content": [{"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}]},],
+        )
+        text = resp.choices[0].message.content or ""
+        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()

@@ -1,11 +1,20 @@
 """Assembles the LangGraph investigation graph."""
 from langgraph.graph import END, START, StateGraph
-
+import time
 from .nodes import (fast_reply, judge, link_check, route_after_triage,
                     triage, web_research, write_reply)
 from .state import GuardianState
 
 
+def timed(name, fn):
+    """Wraps a node so it prints how long it took."""
+    def wrapper(state):
+        start = time.perf_counter()
+        result = fn(state)
+        print(f"⏱ {name}: {time.perf_counter() - start:.1f}s")
+        return result
+    return wrapper
+    
 def build_graph():
     g = StateGraph(GuardianState)
     g.add_node("triage", triage)
